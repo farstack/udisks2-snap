@@ -61,6 +61,5 @@ parts:
             - libpam-systemd
             - libpolkit-agent-1-0
             - libpolkit-gobject-1-0
-            - mount
             - parted
 
