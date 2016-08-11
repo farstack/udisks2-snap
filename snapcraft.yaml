@@ -1,0 +1,66 @@
+name: udisks2
+version: 2.1.7
+summary: D-Bus service to access and manipulate storage devices
+description: |
+    The udisks project provides a daemon, tools and libraries to access
+    and manipulate disks and storage devices.
+
+    Please find the source code for this snap at:
+    https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks
+confinement: strict
+
+apps:
+    udisksctl:
+        command: bin/udisksctl
+        plugs: [client]
+    umount:
+        command: sbin/umount.udisks2
+        plugs: [client]
+    udisksd:
+        daemon: simple
+        command: libexec/udisks2/udisksd
+        slots: [service]
+        plugs: [mount-observe]
+
+slots:
+    service:
+        interface: udisks2
+
+plugs:
+    client:
+        interface: udisks2
+parts:
+    udisks2:
+        plugin: autotools
+        source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks
+        source-type: git
+        source-branch: udisks/2.1.7
+        configflags:
+            - fhs_media=no
+        install-via: prefix
+        build-packages:
+            - pkg-config
+            - xsltproc
+            - gtk-doc-tools
+            - intltool
+            - libglib2.0-dev
+            - udev
+            - libgudev-1.0-dev
+            - libpolkit-gobject-1-dev
+            - libpolkit-agent-1-dev
+            - libacl1-dev
+            - libgirepository1.0-dev
+            - gobject-introspection
+            - libatasmart-dev
+            - libsystemd-dev
+        stage-packages:
+            - libacl1
+            - libatasmart4
+            - libglib2.0-0
+            - libgudev-1.0-0
+            - libpam-systemd
+            - libpolkit-agent-1-0
+            - libpolkit-gobject-1-0
+            - mount
+            - parted
+
