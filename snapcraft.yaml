@@ -35,8 +35,6 @@ parts:
         source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks
         source-type: git
         source-branch: udisks/2.1.7
-        configflags:
-            - fhs_media=no
         install-via: prefix
         build-packages:
             - pkg-config
@@ -61,6 +59,22 @@ parts:
             - libpam-systemd
             - libpolkit-agent-1-0
             - libpolkit-gobject-1-0
-            - mount
             - parted
+        filesets:
+            licenses:
+                - usr/share/doc/*/*copyright*
+            binaries:
+                - bin/udisksctl
+                - libexec/udisks2/udisksd
+                - sbin/umount.udisks2
+        snap:
+            - $binaries
+            - $licenses
+            - lib
+            - -lib/pkgconfig
+            - -lib/systemd
+            - -lib/cgmanager
+            - libexec
+            - sbin
+            - usr/lib/*/*.so*
 
