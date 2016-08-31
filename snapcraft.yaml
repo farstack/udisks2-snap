@@ -13,9 +13,6 @@ apps:
     udisksctl:
         command: bin/udisksctl
         plugs: [client]
-    umount:
-        command: sbin/umount.udisks2
-        plugs: [client]
     udisksd:
         daemon: simple
         command: libexec/udisks2/udisksd
@@ -66,7 +63,6 @@ parts:
             binaries:
                 - bin/udisksctl
                 - libexec/udisks2/udisksd
-                - sbin/umount.udisks2
         snap:
             - $binaries
             - $licenses
