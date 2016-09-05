@@ -1,0 +1,5 @@
+*.snap
+*source.tar.bz2
+parts
+prime
+stage
