@@ -7,6 +7,7 @@ description: |
 
     Please find the source code for this snap at:
     https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks
+grade: stable
 confinement: strict
 
 apps:
