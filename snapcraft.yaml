@@ -14,6 +14,7 @@ apps:
     udisksctl:
         command: bin/udisksctl
         plugs: [client]
+        aliases: [udisksctl]
     udisksd:
         daemon: simple
         command: libexec/udisks2/udisksd
