@@ -17,7 +17,8 @@
 set -e
 
 image_name=ubuntu-core-16.img
-channel=stable
+# FIXME: default to candidate channel until snapd 2.21 lands in stable
+channel=candidate
 spread_opts=
 force_new_image=0
 test_from_channel=0
