@@ -1,5 +1,5 @@
 name: udisks2
-version: 2.1.7-2
+version: 2.1.7-3
 summary: D-Bus service to access and manipulate storage devices
 description: |
     The udisks project provides a daemon, tools and libraries to access
@@ -14,6 +14,7 @@ apps:
     udisksctl:
         command: bin/udisksctl
         plugs: [client]
+        aliases: [udisksctl]
     udisksd:
         daemon: simple
         command: libexec/udisks2/udisksd

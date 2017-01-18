@@ -1,0 +1,14 @@
+summary: Test udisks2 snap installation was successful
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    # Service should be up and running
+    wait_for_systemd_service snap.udisks2.udisksd
+
+    # .. and udisksctl should be able to reach udisksd
+    /snap/bin/udisks2.udisksctl status
+
+    # Ensure all necessary plugs/slots are connected
+    snap interfaces | grep -Pzq ":mount-observe +udisks2"
+    snap interfaces | grep -Pzq "udisks2:service +udisks2:client"

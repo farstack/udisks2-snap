@@ -1,0 +1,12 @@
+summary: Test that udisks can see the qemu disks
+backends: [qemu]
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    # Service should be up and running
+    wait_for_systemd_service snap.udisks2.udisksd
+
+    # Check that we can see the qemu system disks
+    /snap/bin/udisks2.udisksctl status | grep "QEMU HARDDISK"
+    /snap/bin/udisks2.udisksctl status | grep "QEMU DVD-ROM"
