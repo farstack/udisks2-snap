@@ -19,7 +19,9 @@ apps:
         daemon: simple
         command: libexec/udisks2/udisksd
         slots: [service]
-        plugs: [mount-observe]
+        plugs:
+            - hardware-observe
+            - mount-observe
     ciborium:
         daemon: simple
         command: bin/ciborium
