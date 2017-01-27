@@ -73,7 +73,7 @@ parts:
             binaries:
                 - bin/udisksctl
                 - libexec/udisks2/udisksd
-        snap:
+        prime:
             - $binaries
             - $licenses
             - lib
@@ -99,7 +99,7 @@ parts:
                 - usr/share/doc/*/*copyright*
             binaries:
                 - bin/ciborium
-        snap:
+        prime:
             - $binaries
             - $licenses
 
