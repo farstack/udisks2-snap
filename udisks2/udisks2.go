@@ -525,6 +525,26 @@ func (iface Interfaces) desiredUnmountEvent() bool {
 	return false
 }
 
+func hasThumbCompat(driveProps VariantMap) bool {
+	// According to the udisks docs USB drives will have "thumb" compatibility
+	mediaCompatibilityVal := reflect.ValueOf(driveProps["MediaCompatibility"])
+	mediaCompatibility := mediaCompatibilityVal.Field(0).Elem()
+	length := mediaCompatibility.Len()
+	for i := 0; i < length; i++ {
+		array := reflect.ValueOf(mediaCompatibility.Index(i).Interface())
+		arrayLength := array.Len()
+		byteArray := make([]byte, arrayLength, arrayLength)
+		for j := 0; j < arrayLength; j++ {
+			byteArray[j] = array.Index(j).Interface().(byte)
+		}
+		log.Println("Array String:", string(byteArray))
+		if string(byteArray) == "thumb" {
+			return true
+		}
+	}
+	return false
+}
+
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	// No file system interface means we can't mount it even if we wanted to
 	_, ok := s.Props[dbusFilesystemInterface]
@@ -560,8 +580,8 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 		return false, nil
 	} else {
 		mediaRemovable := reflect.ValueOf(mediaRemovableVariant.Value).Bool()
-		if !mediaRemovable {
-			log.Println(drivePath, "which holds", s.Path, "is not MediaRemovable")
+		if !mediaRemovable && !hasThumbCompat(driveProps) {
+			log.Println(drivePath, "which holds", s.Path, "is not MediaRemovable or a thumb drive")
 			return false, nil
 		}
 	}
