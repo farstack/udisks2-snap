@@ -24,7 +24,8 @@ apps:
             - mount-observe
     ciborium:
         daemon: simple
-        command: bin/ciborium
+        # Startup alongside udisksd can be racy so give it a head start
+        command: bash -c \'sleep 3 && bin/ciborium\'
         plugs:
             - client
             - network-bind
