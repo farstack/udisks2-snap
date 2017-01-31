@@ -25,7 +25,7 @@ apps:
     ciborium:
         daemon: simple
         # Startup alongside udisksd can be racy so give it a head start
-        command: bash -c \'sleep 3 && bin/ciborium\'
+        command: bash -c \'sleep 3 && $SNAP/bin/ciborium\'
         plugs:
             - client
             - network-bind
