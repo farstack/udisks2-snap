@@ -537,7 +537,6 @@ func hasThumbCompat(driveProps VariantMap) bool {
 		for j := 0; j < arrayLength; j++ {
 			byteArray[j] = array.Index(j).Interface().(byte)
 		}
-		log.Println("Array String:", string(byteArray))
 		if string(byteArray) == "thumb" {
 			return true
 		}
