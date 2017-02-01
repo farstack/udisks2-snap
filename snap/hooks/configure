@@ -1,0 +1,19 @@
+#!/bin/sh
+
+FLAG_FILE="$SNAP_COMMON/.automount_enabled"
+
+value=$(snapctl get automount)
+if [ -z "$value" ]; then
+    # default to off
+    snapctl set automount=off
+    "$value"="off"
+fi
+
+if [ "$value" = "on" ]; then
+    touch "$FLAG_FILE"
+elif [ "$value" = "off" ]; then
+    rm -f "$FLAG_FILE"
+fi
+
+
+
