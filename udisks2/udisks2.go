@@ -542,7 +542,22 @@ func isThumbDrive(driveProps VariantMap) bool {
 	return false
 }
 
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
+	// Check if automount is enabled for the snap
+	if !exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled") {
+		return false, nil
+	}
 	// No file system interface means we can't mount it even if we wanted to
 	_, ok := s.Props[dbusFilesystemInterface]
 	if !ok {
