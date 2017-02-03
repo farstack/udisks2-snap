@@ -16,3 +16,7 @@ execute: |
     snap interfaces | grep -Pzq ":mount-observe +udisks2"
     snap interfaces | grep -Pzq "udisks2:service +udisks2:client"
     snap interfaces | grep -Pzq ":network-bind +udisks2"
+
+    # Check that automount is disabled by default
+    snap get udisks2 automount.enable | grep "false"
+    test ! -e /var/snap/udisks2/common/.automount_enabled
