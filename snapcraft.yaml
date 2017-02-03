@@ -92,6 +92,7 @@ parts:
         source-type: git
         source-branch: ciborium/0.2.12
         build-packages:
+            - bzr
             - libqt5opengl5-dev
             - pkg-config
             - qtbase5-private-dev
