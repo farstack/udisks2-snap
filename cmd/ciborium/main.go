@@ -28,7 +28,6 @@ import (
 	"strings"
 	"sync"
 	"syscall"
-	"time"
 
 	"launchpad.net/ciborium/gettext"
 	"launchpad.net/ciborium/notifications"
@@ -117,37 +116,8 @@ func main() {
 	gettext.BindTextdomain("ciborium", "/usr/share/locale")
 
 	var (
-		msgStorageSuccess message = message{
-			// TRANSLATORS: This is the summary of a notification bubble with a short message of
-			// success when addding a storage device.
-			Summary: gettext.Gettext("Storage device detected"),
-			// TRANSLATORS: This is the body of a notification bubble with a short message about content
-			// being scanned when addding a storage device.
-			Body: gettext.Gettext("This device will be scanned for new content"),
-		}
-
-		msgStorageFail message = message{
-			// TRANSLATORS: This is the summary of a notification bubble with a short message of
-			// failure when adding a storage device.
-			Summary: gettext.Gettext("Failed to add storage device"),
-			// TRANSLATORS: This is the body of a notification bubble with a short message with hints
-			// with regards to the failure when adding a storage device.
-			Body: gettext.Gettext("Make sure the storage device is correctly formated"),
-		}
-
-		msgStorageRemoved message = message{
-			// TRANSLATORS: This is the summary of a notification bubble with a short message of
-			// a storage device being removed
-			Summary: gettext.Gettext("Storage device has been removed"),
-			// TRANSLATORS: This is the body of a notification bubble with a short message about content
-			// from the removed device no longer being available
-			Body: gettext.Gettext("Content previously available on this device will no longer be accessible"),
-		}
-	)
-
-	var (
-		systemBus, sessionBus *dbus.Connection
-		err                   error
+		systemBus *dbus.Connection
+		err       error
 	)
 
 	if systemBus, err = dbus.Connect(dbus.SystemBus); err != nil {
@@ -155,15 +125,7 @@ func main() {
 	}
 	log.Print("Using system bus on ", systemBus.UniqueName)
 
-	if sessionBus, err = dbus.Connect(dbus.SessionBus); err != nil {
-		log.Fatal("Connection error: ", err)
-	}
-	log.Print("Using session bus on ", sessionBus.UniqueName)
-
 	udisks2 := udisks2.NewStorageWatcher(systemBus, supportedFS...)
-
-	notificationHandler := notifications.NewLegacyHandler(sessionBus, "ciborium")
-	notifyFree := buildFreeNotify(notificationHandler)
 
 	blockAdded, blockError := udisks2.SubscribeAddEvents()
 	formatCompleted, formatErrors := udisks2.SubscribeFormatEvents()
@@ -180,37 +142,14 @@ func main() {
 	go func() {
 		log.Println("Listening for addition and removal events.")
 		for {
-			var n *notifications.PushMessage
 			select {
 			case a := <-blockAdded:
 				udisks2.Mount(a)
 			case e := <-blockError:
 				log.Println("Issues in block for added drive:", e)
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageFail.Summary,
-					msgStorageFail.Body,
-					errorIcon,
-				)
 			case m := <-mountRemoved:
 				log.Println("Path removed", m)
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageRemoved.Summary,
-					msgStorageRemoved.Body,
-					sdCardIcon,
-				)
 				mw.remove(mountpoint(m))
-			case <-time.After(time.Minute):
-				for _, m := range mw.getMountpoints() {
-					err = notifyFree(m)
-					if err != nil {
-						log.Print("Error while querying free space for ", m, ": ", err)
-					}
-				}
-			}
-			if n != nil {
-				if err := notificationHandler.Send(n); err != nil {
-					log.Println(err)
-				}
 			}
 		}
 	}()
@@ -219,15 +158,9 @@ func main() {
 	go func() {
 		log.Println("Listening for mount and unmount events.")
 		for {
-			var n *notifications.PushMessage
 			select {
 			case m := <-mountCompleted:
 				log.Println("Mounted", m)
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageSuccess.Summary,
-					msgStorageSuccess.Body,
-					sdCardIcon,
-				)
 
 				if err := createStandardHomeDirs(m.Mountpoint); err != nil {
 					log.Println("Failed to create standard dir layout:", err)
@@ -237,59 +170,25 @@ func main() {
 			case e := <-mountErrors:
 				log.Println("Error while mounting device", e)
 
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageFail.Summary,
-					msgStorageFail.Body,
-					errorIcon,
-				)
 			case m := <-unmountCompleted:
 				log.Println("Path removed", m)
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageRemoved.Summary,
-					msgStorageRemoved.Body,
-					sdCardIcon,
-				)
 				mw.remove(mountpoint(m))
 			case e := <-unmountErrors:
 				log.Println("Error while unmounting device", e)
 
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageFail.Summary,
-					msgStorageFail.Body,
-					errorIcon,
-				)
-			}
-
-			if n != nil {
-				if err := notificationHandler.Send(n); err != nil {
-					log.Println(err)
-				}
 			}
 		}
 	}()
 
 	// format operations
 	go func() {
-		log.Println("Listening for format events.")
 		for {
-			var n *notifications.PushMessage
 			select {
 			case f := <-formatCompleted:
 				log.Println("Format done. Trying to mount.")
 				udisks2.Mount(f)
 			case e := <-formatErrors:
 				log.Println("There was an error while formatting", e)
-				n = notificationHandler.NewStandardPushMessage(
-					msgStorageFail.Summary,
-					msgStorageFail.Body,
-					errorIcon,
-				)
-			}
-
-			if n != nil {
-				if err := notificationHandler.Send(n); err != nil {
-					log.Println(err)
-				}
 			}
 		}
 	}()
