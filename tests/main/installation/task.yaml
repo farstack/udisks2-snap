@@ -20,3 +20,13 @@ execute: |
     # Check that automount is disabled by default
     snap get udisks2 automount.enable | grep "false"
     test ! -e /var/snap/udisks2/common/.automount_enabled
+
+    # Check that enabling automount DTRT
+    snap set udisks2 automount.enable=true
+    snap get udisks2 automount.enable | grep "true"
+    test -e /var/snap/udisks2/common/.automount_enabled
+
+    # And for disabling
+    snap set udisks2 automount.enable=false
+    snap get udisks2 automount.enable | grep "false"
+    test ! -e /var/snap/udisks2/common/.automount_enabled
