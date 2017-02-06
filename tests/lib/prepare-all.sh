@@ -18,6 +18,8 @@ cat <<-EOF > /home/test/build-snap.sh
 #!/bin/sh
 set -ex
 
+export DEBIAN_FRONTEND=noninteractive
+
 # FIXME: Enable propose for now until problems with conflicting systemd
 # packages between the Ubuntu Core image ppa and the archive are fixed.
 echo "deb http://archive.ubuntu.com/ubuntu/ xenial-proposed restricted main universe" > /etc/apt/sources.list.d/ubuntu-proposed.list
