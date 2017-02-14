@@ -27,7 +27,7 @@ echo "deb http://archive.ubuntu.com/ubuntu/ xenial-proposed restricted main univ
 # Ensure we have the latest updates installed as the core snap
 # may be a bit out of date.
 apt update
-apt full-upgrade -y --force-yes
+apt full-upgrade -y --force-yes -o Dpkg::Options::="--force-confold"
 
 apt install -y --force-yes snapcraft
 cd /home/udisks2
