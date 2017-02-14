@@ -19,7 +19,15 @@ apps:
         daemon: simple
         command: libexec/udisks2/udisksd
         slots: [service]
-        plugs: [mount-observe]
+        plugs:
+            - hardware-observe
+            - mount-observe
+    ciborium:
+        daemon: simple
+        command: bin/ciborium.sh
+        plugs:
+            - client
+            - network-bind
 
 slots:
     service:
@@ -67,7 +75,7 @@ parts:
             binaries:
                 - bin/udisksctl
                 - libexec/udisks2/udisksd
-        snap:
+        prime:
             - $binaries
             - $licenses
             - lib
@@ -77,4 +85,29 @@ parts:
             - libexec
             - sbin
             - usr/lib/*/*.so*
+    ciborium:
+        plugin: go
+        go-importpath: launchpad.net/ciborium
+        source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks2
+        source-type: git
+        source-branch: ciborium/0.2.12
+        build-packages:
+            - bzr
+            - libqt5opengl5-dev
+            - pkg-config
+            - qtbase5-private-dev
+            - qtdeclarative5-private-dev
+        filesets:
+            licenses:
+                - usr/share/doc/*/*copyright*
+            binaries:
+                - bin/ciborium
+        prime:
+            - $binaries
+            - $licenses
+    ciborium-launcher:
+        plugin: dump
+        source: bin
+        organize:
+            ciborium.sh: bin/ciborium.sh
 
