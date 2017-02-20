@@ -1,0 +1,40 @@
+summary: Verify that a huge number of mount entries doesn't cause ciborium to fail reading dbus messages
+description: |
+  The ciboirum service uses go-dbus (https://code.launchpad.net/~go-dbus/go-dbus/v1)
+  which had a problem that it didn't read the full message body of a dbus message.
+  Because of that ciborium failed to read the enumerated mount entires on startup
+  on system with a huge number of those.
+
+  Bug found as LP #1666179 (https://bugs.launchpad.net/plano/+bug/1666179)
+
+environment:
+    NUM_MOUNT_ENTRIES: 200
+    TARGET_DIR: /tmp/mounts
+
+restore: |
+    n=0
+    while [ $n -lt $NUM_MOUNT_ENTRIES ]; do
+        umount $TARGET_DIR/$n || true
+        n=$((n+1))
+    done
+
+execute: |
+    sudo systemctl stop snap.udisks2.ciborium
+    journalctl --flush -u snap.udisks2.ciborium
+
+    # Create a huge number of mount entiries on the system before we start
+    # ciborium again and it queries udisks2 for a list of those.
+    dd if=/dev/zero of=/tmp/disk.img bs=1M count=10
+    mkfs.ext4 /tmp/disk.img
+    n=0
+    while [ $n -lt $NUM_MOUNT_ENTRIES ]; do
+        mkdir -p $TARGET_DIR/$n
+        mount -o loop /tmp/disk.img $TARGET_DIR/$n
+        n=$((n+1))
+    done
+
+    systemctl start snap.udisks2.ciborium
+    # Need to give udisks2 some time to go through all messages and parse
+    # them properly.
+    sleep 30
+    ! journalctl --no-pager -u snap.udisks2.ciborium | grep "Could not read message body"
