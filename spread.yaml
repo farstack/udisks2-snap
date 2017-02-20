@@ -52,6 +52,14 @@ debug-each: |
   dmesg | grep DENIED || true
 
 suites:
+    tests/bugs/:
+        summary: Tests for specific bugs found with the udisks2 snap
+        systems:
+            - ubuntu-core-16
+        prepare: |
+            . $TESTSLIB/prepare.sh
+        restore-each: |
+            . $TESTSLIB/restore-each.sh
     tests/main/:
         summary: Tests for udisks2
         systems:
