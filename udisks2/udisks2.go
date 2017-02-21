@@ -553,6 +553,14 @@ func exists(path string) bool {
 	return true
 }
 
+func isAcceptedDevice(mediaRemovable, removable, thumbDrive bool) bool {
+	// Some USB thumb devices report they have removable media where they
+	// have not. See udisks2 API documentation for more details.
+	// In summary we only accept devices which are marked as removable and
+	// are thumb drivers. Otherwise all devices are not accepted.
+	return (mediaRemovable || removable) && thumbDrive
+}
+
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	// Check if automount is enabled for the snap
 	if !exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled") {
@@ -600,9 +608,7 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 
 	removable := reflect.ValueOf(removableVariant.Value).Bool()
 	mediaRemovable := reflect.ValueOf(mediaRemovableVariant.Value).Bool()
-	// Some USB thumb devices report they have removable media where they
-	// have not. See udisks2 API documentation for more details.
-	if !(mediaRemovable || removable) || !isThumbDrive(driveProps) {
+	if !isAcceptedDevice(mediaRemovable, removable, isThumbDrive(driveProps)) {
 		log.Println(drivePath, "which holds", s.Path, "is not Removable or MediaRemovable and a thumb drive")
 		return false, nil
 	}
