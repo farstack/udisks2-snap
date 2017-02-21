@@ -22,3 +22,12 @@ func (s *Udisks2TestSuite) TestIsDeviceAcceptedForAutomount(c *C) {
 	// Device with MediaRemovable = false, Removable = false and MediaCompatibility = [thumb]
 	c.Assert(isAcceptedDevice(false, false, true), Equals, false)
 }
+
+func (s *Udisks2TestSuite) TestIsFsValid(c *C) {
+	supportedFs := []string{"vfat", "ntfs"}
+	watcher := NewStorageWatcher(nil, supportedFs...)
+	c.Assert(watcher.isFsValid("vfat"), Equals, true)
+	c.Assert(watcher.isFsValid("ext4"), Equals, false)
+	c.Assert(watcher.isFsValid("ntfs"), Equals, true)
+	c.Assert(watcher.isFsValid("squashfs"), Equals, false)
+}
