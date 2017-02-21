@@ -587,15 +587,24 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 		log.Println(drivePath, "doesn't hold a Drive interface")
 		return false, nil
 	}
-	if mediaRemovableVariant, ok := driveProps["MediaRemovable"]; !ok {
+	removableVariant, ok := driveProps["Removable"]
+	if !ok {
+		log.Println(drivePath, "which holds", s.Path, "doesn't have Removable")
+		return false, nil
+	}
+	mediaRemovableVariant, ok := driveProps["MediaRemovable"]
+	if !ok {
 		log.Println(drivePath, "which holds", s.Path, "doesn't have MediaRemovable")
 		return false, nil
-	} else {
-		mediaRemovable := reflect.ValueOf(mediaRemovableVariant.Value).Bool()
-		if !mediaRemovable && !isThumbDrive(driveProps) {
-			log.Println(drivePath, "which holds", s.Path, "is not MediaRemovable or a thumb drive")
-			return false, nil
-		}
+	}
+
+	removable := reflect.ValueOf(removableVariant.Value).Bool()
+	mediaRemovable := reflect.ValueOf(mediaRemovableVariant.Value).Bool()
+	// Some USB thumb devices report they have removable media where they
+	// have not. See udisks2 API documentation for more details.
+	if !(mediaRemovable || removable) || !isThumbDrive(driveProps) {
+		log.Println(drivePath, "which holds", s.Path, "is not Removable or MediaRemovable and a thumb drive")
+		return false, nil
 	}
 
 	if s.Props.isMounted() {
