@@ -561,6 +561,16 @@ func isAcceptedDevice(mediaRemovable, removable, thumbDrive bool) bool {
 	return (mediaRemovable || removable) && thumbDrive
 }
 
+func (u *UDisks2) isFsValid(fs string) bool {
+	fsFound := false
+	for _, validFs := range u.validFS {
+		if validFs == fs {
+			fsFound = true
+		}
+	}
+	return fsFound
+}
+
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	// Check if automount is enabled for the snap
 	if !exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled") {
@@ -632,8 +642,7 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 		return false, nil
 	}
 
-	i := u.validFS.Search(fs)
-	if i >= u.validFS.Len() || u.validFS[i] != fs {
+	if !u.isFsValid(fs) {
 		log.Println(fs, "not in:", u.validFS, "for", s.Path)
 		return false, ErrUnhandledFileSystem
 	}
