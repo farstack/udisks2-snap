@@ -103,7 +103,7 @@ var (
 func init() {
 	mw = newMountwatch()
 	mw.set(homeMountpoint, true)
-	supportedFS = []string{"vfat"}
+	supportedFS = []string{"vfat", "ntfs"}
 }
 
 func main() {
