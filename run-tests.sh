@@ -9,6 +9,7 @@ fi
 $SUDO apt update
 $SUDO apt install -y --force-yes \
 	golang-go \
+	libqt5opengl5-dev pkg-config qtbase5-private-dev qtdeclarative5-private-dev \
 	bzr
 
 export GOPATH=`mktemp -d`
