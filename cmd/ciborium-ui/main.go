@@ -50,7 +50,6 @@ type DriveList struct {
 }
 
 var mainQmlPath = filepath.Join("ciborium", "qml", "main.qml")
-var supportedFS []string = []string{"vfat"}
 
 func init() {
 	os.Setenv("APP_ID", "ciborium")
@@ -110,7 +109,7 @@ func newDriveControl() (*driveControl, error) {
 	if err != nil {
 		return nil, err
 	}
-	udisks := udisks2.NewStorageWatcher(systemBus, supportedFS...)
+	udisks := udisks2.NewStorageWatcher(systemBus)
 
 	return &driveControl{udisks: udisks}, nil
 }
