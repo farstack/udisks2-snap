@@ -17,9 +17,13 @@ mkdir -p $GOPATH/src/launchpad.net
 ln -sf $PWD $GOPATH/src/launchpad.net/ciborium
 
 go get -v launchpad.net/ciborium/cmd/ciborium
+go get -v launchpad.net/ciborium/cmd/ciborium-ui
 go get -v -t launchpad.net/ciborium/cmd/ciborium
+go get -v -t launchpad.net/ciborium/cmd/ciborium-ui
 
 go build -v launchpad.net/ciborium/cmd/ciborium
+go build -v launchpad.net/ciborium/cmd/ciborium-ui
 
 go test -v launchpad.net/ciborium/cmd/ciborium
+go test -v launchpad.net/ciborium/cmd/ciborium-ui
 go test -v launchpad.net/ciborium/udisks2
