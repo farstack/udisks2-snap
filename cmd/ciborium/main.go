@@ -97,13 +97,11 @@ const (
 
 var (
 	mw          *mountwatch
-	supportedFS []string
 )
 
 func init() {
 	mw = newMountwatch()
 	mw.set(homeMountpoint, true)
-	supportedFS = []string{"vfat", "ntfs"}
 }
 
 func main() {
@@ -125,7 +123,7 @@ func main() {
 	}
 	log.Print("Using system bus on ", systemBus.UniqueName)
 
-	udisks2 := udisks2.NewStorageWatcher(systemBus, supportedFS...)
+	udisks2 := udisks2.NewStorageWatcher(systemBus)
 
 	blockAdded, blockError := udisks2.SubscribeAddEvents()
 	formatCompleted, formatErrors := udisks2.SubscribeFormatEvents()

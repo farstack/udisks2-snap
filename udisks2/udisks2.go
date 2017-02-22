@@ -52,8 +52,6 @@ const (
 	dbusRemovedSignal           = "InterfacesRemoved"
 )
 
-var ErrUnhandledFileSystem = errors.New("unhandled filesystem")
-
 type Drive struct {
 	Path         dbus.ObjectPath
 	blockDevices map[dbus.ObjectPath]InterfacesAndProperties
@@ -72,7 +70,6 @@ type mountpointMap map[dbus.ObjectPath]string
 
 type UDisks2 struct {
 	conn            *dbus.Connection
-	validFS         sort.StringSlice
 	blockAdded      chan *Event
 	driveAdded      *dbus.SignalWatch
 	mountRemoved    chan string
@@ -94,10 +91,9 @@ type UDisks2 struct {
 	mountErrors     chan error
 }
 
-func NewStorageWatcher(conn *dbus.Connection, filesystems ...string) (u *UDisks2) {
+func NewStorageWatcher(conn *dbus.Connection) (u *UDisks2) {
 	u = &UDisks2{
 		conn:          conn,
-		validFS:       sort.StringSlice(filesystems),
 		drives:        make(driveMap),
 		mountpoints:   make(mountpointMap),
 		pendingMounts: make([]string, 0, 0),
@@ -561,16 +557,6 @@ func isAcceptedDevice(mediaRemovable, removable, thumbDrive bool) bool {
 	return (mediaRemovable || removable) && thumbDrive
 }
 
-func (u *UDisks2) isFsValid(fs string) bool {
-	fsFound := false
-	for _, validFs := range u.validFS {
-		if validFs == fs {
-			fsFound = true
-		}
-	}
-	return fsFound
-}
-
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	// Check if automount is enabled for the snap
 	if !exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled") {
@@ -640,11 +626,6 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	fs := reflect.ValueOf(id.Value).String()
 	if fs == "" {
 		return false, nil
-	}
-
-	if !u.isFsValid(fs) {
-		log.Println(fs, "not in:", u.validFS, "for", s.Path)
-		return false, ErrUnhandledFileSystem
 	}
 
 	return true, nil
