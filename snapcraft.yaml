@@ -92,27 +92,11 @@ parts:
     ciborium:
         plugin: go
         go-importpath: launchpad.net/ciborium
-        source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks2
-        source-type: git
-        source-branch: ciborium/0.2.12
-        build-packages:
-            - bzr
-            - libqt5opengl5-dev
-            - pkg-config
-            - qtbase5-private-dev
-            - qtdeclarative5-private-dev
-        filesets:
-            licenses:
-                - usr/share/doc/*/*copyright*
-            binaries:
-                - bin/ciborium
-        prime:
-            - $binaries
-            - $licenses
+        source: .
 
-    ciborium-launcher:
+    common:
         plugin: dump
-        source: bin
-        organize:
-            ciborium.sh: bin/ciborium.sh
+        source: .
+        prime:
+            - bin/ciborium.sh
 
