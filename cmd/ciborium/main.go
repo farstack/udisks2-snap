@@ -20,17 +20,10 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 
-	"launchpad.net/ciborium/gettext"
-	"launchpad.net/ciborium/notifications"
 	"launchpad.net/ciborium/udisks2"
 	"launchpad.net/go-dbus/v1"
 )
@@ -96,7 +89,7 @@ const (
 )
 
 var (
-	mw          *mountwatch
+	mw *mountwatch
 )
 
 func init() {
@@ -107,11 +100,6 @@ func init() {
 func main() {
 	// set default logger flags to get more useful info
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	// Initialize i18n
-	gettext.SetLocale(gettext.LC_ALL, "")
-	gettext.Textdomain("ciborium")
-	gettext.BindTextdomain("ciborium", "/usr/share/locale")
 
 	var (
 		systemBus *dbus.Connection
@@ -159,11 +147,6 @@ func main() {
 			select {
 			case m := <-mountCompleted:
 				log.Println("Mounted", m)
-
-				if err := createStandardHomeDirs(m.Mountpoint); err != nil {
-					log.Println("Failed to create standard dir layout:", err)
-				}
-
 				mw.set(mountpoint(m.Mountpoint), true)
 			case e := <-mountErrors:
 				log.Println("Error while mounting device", e)
@@ -197,83 +180,4 @@ func main() {
 
 	done := make(chan bool)
 	<-done
-}
-
-// createStandardHomeDirs creates directories reflecting a standard home, these
-// directories are Documents, Downloads, Music, Pictures and Videos
-func createStandardHomeDirs(mountpoint string) error {
-	log.Println("createStandardHomeDirs(", mountpoint, ")")
-	for _, node := range []string{"Documents", "Downloads", "Music", "Pictures", "Videos"} {
-		dir := filepath.Join(mountpoint, node)
-
-		if _, err := os.Stat(dir); err != nil && os.IsNotExist(err) {
-			if err := os.MkdirAll(dir, 755); err != nil {
-				return err
-			}
-		} else if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// notify only notifies if a notification is actually needed
-// depending on freeThreshold and on warningSent's status
-func buildFreeNotify(nh *notifications.NotificationHandler) notifyFreeFunc {
-	// TRANSLATORS: This is the summary of a notification bubble with a short message warning on
-	// low space
-	summary := gettext.Gettext("Low on disk space")
-	// TRANSLATORS: This is the body of a notification bubble with a short message about content
-	// reamining available space, %d is the remaining percentage of space available on internal
-	// storage
-	bodyInternal := gettext.Gettext("Only %d%% is available on the internal storage device")
-	// TRANSLATORS: This is the body of a notification bubble with a short message about content
-	// reamining available space, %d is the remaining percentage of space available on a given
-	// external storage device
-	bodyExternal := gettext.Gettext("Only %d%% is available on the external storage device")
-
-	var body string
-
-	return func(path mountpoint) error {
-		if path.external() {
-			body = bodyExternal
-		} else {
-			body = bodyInternal
-		}
-
-		availPercentage, err := queryFreePercentage(path)
-		if err != nil {
-			return err
-		}
-
-		if mw.warn(path) && availPercentage <= freeThreshold {
-			n := nh.NewStandardPushMessage(
-				summary,
-				fmt.Sprintf(body, availPercentage),
-				errorIcon,
-			)
-			log.Println("Warning for", path, "available percentage", availPercentage)
-			if err := nh.Send(n); err != nil {
-				return err
-			}
-			mw.set(path, false)
-		}
-
-		if availPercentage > freeThreshold {
-			mw.set(path, true)
-		}
-		return nil
-	}
-}
-
-func queryFreePercentage(path mountpoint) (uint64, error) {
-	s := syscall.Statfs_t{}
-	if err := syscall.Statfs(string(path), &s); err != nil {
-		return 0, err
-	}
-	if s.Blocks == 0 {
-		return 0, errors.New("statfs call returned 0 blocks available")
-	}
-	return uint64(s.Bavail) * 100 / uint64(s.Blocks), nil
 }
