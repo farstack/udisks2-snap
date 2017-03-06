@@ -557,11 +557,15 @@ func isAcceptedDevice(mediaRemovable, removable, thumbDrive bool) bool {
 	return (mediaRemovable || removable) && thumbDrive
 }
 
+func isAutomountEnabled() bool {
+	return exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled")
+}
+
 func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
-	// Check if automount is enabled for the snap
-	if !exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled") {
+	if isAutomountEnabled() {
 		return false, nil
 	}
+
 	// No file system interface means we can't mount it even if we wanted to
 	_, ok := s.Props[dbusFilesystemInterface]
 	if !ok {
