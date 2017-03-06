@@ -102,7 +102,6 @@ func (d *dispatcher) Init() {
 				log.Print(err)
 				continue
 			}
-			log.Print("New addition event for path ", event.Path, event.Props)
 			d.processAddition(event)
 		}
 	}()

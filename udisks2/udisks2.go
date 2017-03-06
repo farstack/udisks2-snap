@@ -449,7 +449,6 @@ func (u *UDisks2) emitExistingDevices() {
 }
 
 func (u *UDisks2) processAddEvent(s *Event) error {
-	log.Println("processAddEvents(", s.Path, s.Props, s.Interfaces, ")")
 	u.mapLock.Lock()
 	defer u.mapLock.Unlock()
 
@@ -462,7 +461,7 @@ func (u *UDisks2) processAddEvent(s *Event) error {
 	if isBlockDevice, err := u.drives.addInterface(s); err != nil {
 		return err
 	} else if isBlockDevice {
-		log.Println("New block device added.")
+		log.Println("New block device added", s.Path)
 		if u.blockAdded != nil && u.blockError != nil {
 			if ok, err := u.desiredMountableEvent(s); err != nil {
 				u.blockError <- err

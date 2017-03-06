@@ -21,81 +21,10 @@ package main
 
 import (
 	"log"
-	"strings"
-	"sync"
 
 	"launchpad.net/ciborium/udisks2"
-	"launchpad.net/go-dbus/v1"
+	dbus "launchpad.net/go-dbus/v1"
 )
-
-type message struct{ Summary, Body string }
-type notifyFreeFunc func(mountpoint) error
-
-type mountpoint string
-
-func (m mountpoint) external() bool {
-	return strings.HasPrefix(string(m), "/media")
-}
-
-type mountwatch struct {
-	lock        sync.Mutex
-	mountpoints map[mountpoint]bool
-}
-
-func (m *mountwatch) set(path mountpoint, state bool) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	m.mountpoints[path] = state
-}
-
-func (m *mountwatch) getMountpoints() []mountpoint {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	mapLen := len(m.mountpoints)
-	mountpoints := make([]mountpoint, 0, mapLen)
-	for p := range m.mountpoints {
-		mountpoints = append(mountpoints, p)
-	}
-	return mountpoints
-}
-
-func (m *mountwatch) warn(path mountpoint) bool {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	return m.mountpoints[path]
-}
-
-func (m *mountwatch) remove(path mountpoint) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	delete(m.mountpoints, path)
-}
-
-func newMountwatch() *mountwatch {
-	return &mountwatch{
-		mountpoints: make(map[mountpoint]bool),
-	}
-}
-
-const (
-	sdCardIcon                = "media-memory-sd"
-	errorIcon                 = "error"
-	homeMountpoint mountpoint = "/home"
-	freeThreshold             = 5
-)
-
-var (
-	mw *mountwatch
-)
-
-func init() {
-	mw = newMountwatch()
-	mw.set(homeMountpoint, true)
-}
 
 func main() {
 	// set default logger flags to get more useful info
@@ -114,10 +43,8 @@ func main() {
 	udisks2 := udisks2.NewStorageWatcher(systemBus)
 
 	blockAdded, blockError := udisks2.SubscribeAddEvents()
-	formatCompleted, formatErrors := udisks2.SubscribeFormatEvents()
-	unmountCompleted, unmountErrors := udisks2.SubscribeUnmountEvents()
-	mountCompleted, mountErrors := udisks2.SubscribeMountEvents()
 	mountRemoved := udisks2.SubscribeRemoveEvents()
+	mountCompleted, mountErrors := udisks2.SubscribeMountEvents()
 
 	// create a routine per couple of channels, the select algorithm will make use
 	// ignore some events if more than one channels is being written to the algorithm
@@ -130,46 +57,16 @@ func main() {
 		for {
 			select {
 			case a := <-blockAdded:
+				log.Println("New block device added")
 				udisks2.Mount(a)
 			case e := <-blockError:
 				log.Println("Issues in block for added drive:", e)
+			case e := <-mountErrors:
+				log.Println("Failed to mount device:", e)
+			case path := <-mountCompleted:
+				log.Println("Successfully mount device:", path)
 			case m := <-mountRemoved:
 				log.Println("Path removed", m)
-				mw.remove(mountpoint(m))
-			}
-		}
-	}()
-
-	// mount operations
-	go func() {
-		log.Println("Listening for mount and unmount events.")
-		for {
-			select {
-			case m := <-mountCompleted:
-				log.Println("Mounted", m)
-				mw.set(mountpoint(m.Mountpoint), true)
-			case e := <-mountErrors:
-				log.Println("Error while mounting device", e)
-
-			case m := <-unmountCompleted:
-				log.Println("Path removed", m)
-				mw.remove(mountpoint(m))
-			case e := <-unmountErrors:
-				log.Println("Error while unmounting device", e)
-
-			}
-		}
-	}()
-
-	// format operations
-	go func() {
-		for {
-			select {
-			case f := <-formatCompleted:
-				log.Println("Format done. Trying to mount.")
-				udisks2.Mount(f)
-			case e := <-formatErrors:
-				log.Println("There was an error while formatting", e)
 			}
 		}
 	}()
