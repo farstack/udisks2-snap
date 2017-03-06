@@ -93,10 +93,15 @@ parts:
         plugin: go
         go-importpath: launchpad.net/ciborium
         source: .
+        install: |
+            export GOPATH=$PWD/../go
+            for d in udisks2 cmd/ciborium ; do
+                cd $GOPATH/src/launchpad.net/ciborium/$d
+                go test -v
+            done
 
     common:
         plugin: dump
         source: .
         prime:
             - bin/ciborium.sh
-
