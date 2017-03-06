@@ -566,8 +566,14 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 		return false, nil
 	}
 
+	_, ok := s.Props[dbusBlockInterface]
+	if !ok {
+		log.Println("Block interface is missing")
+		return false, nil
+	}
+
 	// No file system interface means we can't mount it even if we wanted to
-	_, ok := s.Props[dbusFilesystemInterface]
+	_, ok = s.Props[dbusFilesystemInterface]
 	if !ok {
 		log.Println("Filesystem interface is missing.")
 		return false, nil
@@ -608,7 +614,8 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 
 	removable := reflect.ValueOf(removableVariant.Value).Bool()
 	mediaRemovable := reflect.ValueOf(mediaRemovableVariant.Value).Bool()
-	if !isAcceptedDevice(mediaRemovable, removable, isThumbDrive(driveProps)) {
+
+	if !isAcceptedDevice(mediaRemovable, removable, true) {
 		log.Println(drivePath, "which holds", s.Path, "is not Removable or MediaRemovable and a thumb drive")
 		return false, nil
 	}
@@ -621,6 +628,27 @@ func (u *UDisks2) desiredMountableEvent(s *Event) (bool, error) {
 	if !ok {
 		return false, nil
 	}
+
+	hintIgnore, ok := propBlock["HintIgnore"]
+	if !ok {
+		log.Println(s.Path, "doesn't hold HintIgnore")
+		return false, nil
+	}
+
+	if reflect.ValueOf(hintIgnore.Value).Bool() {
+		return false, nil
+	}
+
+	hintSystem, ok := propBlock["HintSystem"]
+	if !ok {
+		log.Println(s.Path, "doesn't hold HintIgnore")
+		return false, nil
+	}
+
+	if reflect.ValueOf(hintSystem.Value).Bool() {
+		return false, nil
+	}
+
 	id, ok := propBlock["IdType"]
 	if !ok {
 		log.Println(s.Path, "doesn't hold IdType")
