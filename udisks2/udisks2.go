@@ -145,6 +145,7 @@ func (u *UDisks2) Mount(s *Event) {
 		reply, err := obj.Call(dbusFilesystemInterface, "Mount", options)
 		if err != nil {
 			u.mountErrors <- err
+			return
 		}
 		if err := reply.Args(&mountpoint); err != nil {
 			u.mountErrors <- err
