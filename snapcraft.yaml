@@ -24,7 +24,7 @@ apps:
             - mount-observe
     ciborium:
         daemon: simple
-        command: bin/ciborium.sh
+        command: bin/ciborium
         plugs:
             - client
             - network-bind
