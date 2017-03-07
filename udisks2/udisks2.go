@@ -566,6 +566,11 @@ func (u *UDisks2) desiredMountableEvent(s *Event) bool {
 		return false
 	}
 
+	if s.Props.isBlockIgnored() {
+		log.Println(s.Path, "will not be automounted as it is marked to be ignored")
+		return false
+	}
+
 	if !s.hasInterface(dbusBlockInterface) || !s.hasInterface(dbusFilesystemInterface) {
 		log.Println(s.Path, "will not be automounted as it is not a block device or does not have a filesystem")
 		return false
