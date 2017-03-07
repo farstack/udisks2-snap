@@ -217,3 +217,29 @@ func (s *InterfacesAndPropertiesTestSuite) TestIsFileSystem(c *C) {
 	s.properties[dbusFilesystemInterface] = make(map[string]dbus.Variant)
 	c.Assert(s.properties.isFilesystem(), Equals, true)
 }
+
+func (s *InterfacesAndPropertiesTestSuite) TestIsBlockIgnoredWithNoBlockInterface(c *C) {
+	c.Assert(s.properties.isBlockIgnored(), Equals, true)
+}
+
+func (s *InterfacesAndPropertiesTestSuite) TestIsBlockIgnoredWithBlockInterface(c *C) {
+	s.properties[dbusBlockInterface] = make(map[string]dbus.Variant)
+	s.properties[dbusBlockInterface]["HintIgnore"] = dbus.Variant{false}
+	c.Assert(s.properties.isBlockIgnored(), Equals, false)
+	s.properties[dbusBlockInterface]["HintIgnore"] = dbus.Variant{true}
+	c.Assert(s.properties.isBlockIgnored(), Equals, true)
+}
+
+func (s *InterfacesAndPropertiesTestSuite) TestHasNoIdtype(c *C) {
+	c.Assert(s.properties.hasIdType(), Equals, false)
+
+	s.properties[dbusBlockInterface] = make(map[string]dbus.Variant)
+	s.properties[dbusBlockInterface]["IdType"] = dbus.Variant{""}
+	c.Assert(s.properties.hasIdType(), Equals, false)
+}
+
+func (s *InterfacesAndPropertiesTestSuite) TestHasIdType(c *C) {
+	s.properties[dbusBlockInterface] = make(map[string]dbus.Variant)
+	s.properties[dbusBlockInterface]["IdType"] = dbus.Variant{"foo"}
+	c.Assert(s.properties.hasIdType(), Equals, true)
+}

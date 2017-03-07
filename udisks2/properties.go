@@ -61,6 +61,22 @@ func (i InterfacesAndProperties) isMounted() bool {
 	return mountpoints > 0
 }
 
+func (i InterfacesAndProperties) hasIdType() bool {
+	propBlock, ok := i[dbusBlockInterface]
+	if !ok {
+		return false
+	}
+	id, ok := propBlock["IdType"]
+	if !ok {
+		return false
+	}
+	fs := reflect.ValueOf(id.Value).String()
+	if fs == "" {
+		return false
+	}
+	return true
+}
+
 func (i InterfacesAndProperties) hasPartition() bool {
 	prop, ok := i[dbusPartitionInterface]
 	if !ok {
@@ -154,4 +170,16 @@ func (i InterfacesAndProperties) getFormattedPaths() []string {
 func (i InterfacesAndProperties) isFilesystem() bool {
 	_, ok := i[dbusFilesystemInterface]
 	return ok
+}
+
+func (i InterfacesAndProperties) isBlockIgnored() bool {
+	blockProps, ok := i[dbusBlockInterface]
+	if !ok {
+		return true
+	}
+	hintIgnore, ok := blockProps["HintIgnore"]
+	if !ok {
+		return true
+	}
+	return reflect.ValueOf(hintIgnore.Value).Bool()
 }

@@ -35,19 +35,6 @@ const (
 
 type Interfaces []string
 
-type Event struct {
-	Path       dbus.ObjectPath
-	Props      InterfacesAndProperties
-	Interfaces Interfaces
-}
-
-// isRemovalEvent returns if an event represents an InterfacesRemoved signal from the dbus ObjectManager
-// dbus interface. An event is a removal event when it carries a set of the interfaces that have been lost
-// in a dbus object path.
-func (e *Event) isRemovalEvent() bool {
-	return len(e.Interfaces) != 0
-}
-
 type dispatcher struct {
 	conn           *dbus.Connection
 	additionsWatch *dbus.SignalWatch
