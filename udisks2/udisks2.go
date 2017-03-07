@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"sort"
@@ -200,22 +201,9 @@ func (u *UDisks2) mountpointsForPath(p dbus.ObjectPath) []string {
 		}
 		mp := string(byteArray)
 		mp = mp[0 : len(mp)-1]
-		log.Println("New mp found", mp)
 		mountpoints[i] = mp
 	}
 	return mountpoints
-}
-
-func (u *UDisks2) ExternalDrives() []Drive {
-	u.startLock.Lock()
-	defer u.startLock.Unlock()
-	var drives []Drive
-	for _, d := range u.drives {
-		if !d.HasSystemBlockDevices() && len(d.BlockDevices) != 0 {
-			drives = append(drives, *d)
-		}
-	}
-	return drives
 }
 
 func (u *UDisks2) Init() (err error) {
@@ -321,7 +309,6 @@ func (u *UDisks2) emitExistingDevices() {
 		log.Println("Cannot get initial state for devices:", err)
 		return
 	}
-	log.Println("GetManagedObjects was done")
 
 	allDevices := make(map[dbus.ObjectPath]InterfacesAndProperties)
 	if err := reply.Args(&allDevices); err != nil {
@@ -425,36 +412,12 @@ func (iface Interfaces) desiredUnmountEvent() bool {
 	return false
 }
 
-func isThumbDrive(driveProps VariantMap) bool {
-	// According to the udisks docs USB drives will have "thumb" compatibility
-	mediaCompatVar, ok := driveProps["MediaCompatibility"]
-	if !ok {
-		return false
-	}
-
-	mediaCompat := reflect.ValueOf(mediaCompatVar.Value)
-	length := mediaCompat.Len()
-	for i := 0; i < length; i++ {
-		if mediaCompat.Index(i).Interface().(string) == "thumb" {
-			return true
-		}
-	}
-	return false
-}
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true
-	}
-	if os.IsNotExist(err) {
+func isAutomountEnabled() bool {
+	_, err := os.Stat(filepath.Join(os.Getenv("SNAP_COMMON"), ".automount_enabled"))
+	if err != nil {
 		return false
 	}
 	return true
-}
-
-func isAutomountEnabled() bool {
-	return exists(os.Getenv("SNAP_COMMON") + "/.automount_enabled")
 }
 
 func (u *UDisks2) getDriveFromEvent(e *Event) *Drive {
