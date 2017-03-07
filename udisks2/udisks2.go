@@ -76,8 +76,6 @@ type UDisks2 struct {
 	dispatcher      *dispatcher
 	jobs            *jobManager
 	pendingMounts   []string
-	formatCompleted chan *Event
-	formatErrors    chan error
 	umountCompleted chan string
 	unmountErrors   chan error
 	mountCompleted  chan MountEvent
@@ -109,12 +107,6 @@ func (u *UDisks2) SubscribeRemoveEvents() <-chan string {
 func (u *UDisks2) SubscribeBlockDeviceEvents() <-chan bool {
 	u.blockDevice = make(chan bool)
 	return u.blockDevice
-}
-
-func (u *UDisks2) SubscribeFormatEvents() (<-chan *Event, <-chan error) {
-	u.formatCompleted = make(chan *Event)
-	u.formatErrors = make(chan error)
-	return u.formatCompleted, u.formatErrors
 }
 
 func (u *UDisks2) SubscribeUnmountEvents() (<-chan string, <-chan error) {
@@ -175,73 +167,6 @@ func (u *UDisks2) umount(o dbus.ObjectPath) {
 			u.unmountErrors <- err
 		}
 	}()
-}
-
-func (u *UDisks2) syncFormat(o dbus.ObjectPath) error {
-	// perform sync call to format the device
-	log.Println("Formatting", o)
-	obj := u.conn.Object(dbusName, o)
-	options := make(VariantMap)
-	options["auth.no_user_interaction"] = dbus.Variant{true}
-	_, err := obj.Call(dbusBlockInterface, "Format", "vfat", options)
-	return err
-}
-
-func (u *UDisks2) Format(d *Drive) {
-	go func() {
-		log.Println("Format", d)
-		// do a sync call to unmount
-		for blockPath, _ := range d.BlockDevices {
-			mps := u.mountpointsForPath(blockPath)
-			if len(mps) > 0 {
-				log.Println("Unmounting", blockPath)
-				err := u.syncUmount(blockPath)
-				if err != nil {
-					log.Println("Error while doing a pre-format unmount:", err)
-					u.formatErrors <- err
-					return
-				}
-			}
-		}
-
-		// delete all the partitions
-		for blockPath, block := range d.BlockDevices {
-			if block.hasPartition() {
-				if err := u.deletePartition(blockPath); err != nil {
-					log.Println("Issues while deleting partition on", blockPath, ":", err)
-					u.formatErrors <- err
-					return
-				}
-				// delete the block from the map as it shouldn't exist anymore
-				delete(d.BlockDevices, blockPath)
-			}
-		}
-
-		// format the blocks with PartitionTable
-		for blockPath, block := range d.BlockDevices {
-			if !block.isPartitionable() {
-				continue
-			}
-
-			// perform sync call to format the device
-			log.Println("Formatting", blockPath)
-			err := u.syncFormat(blockPath)
-			if err != nil {
-				u.formatErrors <- err
-			}
-		}
-		// no, we do not send a success because it should be done ONLY when we get a format job done
-		// event from the dispatcher.
-	}()
-}
-
-func (u *UDisks2) deletePartition(o dbus.ObjectPath) error {
-	log.Println("Calling delete on", o)
-	obj := u.conn.Object(dbusName, o)
-	options := make(VariantMap)
-	options["auth.no_user_interaction"] = dbus.Variant{true}
-	_, err := obj.Call(dbusPartitionInterface, "Delete", options)
-	return err
 }
 
 func (u *UDisks2) mountpointsForPath(p dbus.ObjectPath) []string {
@@ -308,20 +233,6 @@ func (u *UDisks2) Init() (err error) {
 				case e := <-u.dispatcher.Removals:
 					if err := u.processRemoveEvent(e.Path, e.Interfaces); err != nil {
 						log.Println("Issues while processing remove event:", err)
-					}
-				case j := <-u.jobs.FormatEraseJobs:
-					if j.WasCompleted {
-						log.Print("Erase job completed.")
-					} else {
-						log.Print("Erase job started.")
-					}
-				case j := <-u.jobs.FormatMkfsJobs:
-					if j.WasCompleted {
-						log.Println("Format job done for", j.Event.Path)
-						u.pendingMounts = append(u.pendingMounts, j.Paths...)
-						sort.Strings(u.pendingMounts)
-					} else {
-						log.Print("Format job started.")
 					}
 				case j := <-u.jobs.UnmountJobs:
 					if j.WasCompleted {
@@ -449,7 +360,6 @@ func (u *UDisks2) processAddEvent(s *Event) error {
 	pos := sort.SearchStrings(u.pendingMounts, string(s.Path))
 	if pos != len(u.pendingMounts) && s.Props.isFilesystem() {
 		log.Println("Path", s.Path, "must be remounted.")
-		u.formatCompleted <- s
 	}
 
 	if isBlockDevice, err := u.drives.addInterface(s); err != nil {
