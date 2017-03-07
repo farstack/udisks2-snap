@@ -106,5 +106,4 @@ parts:
         plugin: dump
         source: .
         prime:
-            - bin/ciborium.sh
             - bin/udisksctl.sh
