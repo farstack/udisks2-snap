@@ -15,6 +15,11 @@ for snap in /snap/*; do
 	esac
 done
 
+# Cleanup all configuration files from the snap so that we have
+# a fresh start for the next test
+rm -rf /var/snap/$SNAP_NAME/common/*
+rm -rf /var/snap/$SNAP_NAME/current/*
+
 # Ensure we have the same state for snapd as we had before
 systemctl stop snapd.service snapd.socket
 rm -rf /var/lib/snapd/*
