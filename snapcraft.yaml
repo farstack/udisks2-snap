@@ -93,6 +93,8 @@ parts:
         plugin: go
         go-importpath: launchpad.net/ciborium
         source: .
+        build-packages:
+            - bzr
         install: |
             export GOPATH=$PWD/../go
             for d in udisks2 cmd/ciborium ; do
