@@ -40,6 +40,23 @@ func main() {
 	}
 	log.Print("Using system bus on ", systemBus.UniqueName)
 
+	watch, err := systemBus.WatchName("org.freedesktop.UDisks2")
+	if err != nil {
+		log.Fatal("Failed to setup watch for udisks2 service:", err)
+	}
+	defer watch.Cancel()
+
+	ownerAppeared := make(chan int, 1)
+	go func() {
+		for owner := range watch.C {
+			log.Println("New owner", owner, "appeared for udisks2 service name")
+			ownerAppeared <- 0
+		}
+	}()
+
+	// Wait until an owner for udisks2 appears and we can start talking to it
+	<-ownerAppeared
+
 	udisks2 := udisks2.NewStorageWatcher(systemBus)
 
 	blockAdded, blockError := udisks2.SubscribeAddEvents()
