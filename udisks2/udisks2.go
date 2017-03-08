@@ -462,6 +462,7 @@ func (u *UDisks2) desiredMountableEvent(s *Event) bool {
 
 	if !drive.IsRemovable() {
 		log.Println(s.Path, "will not be automounted as its drive is not removable")
+		return false
 	}
 
 	if s.Props.isMounted() {
