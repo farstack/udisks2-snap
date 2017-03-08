@@ -1,9 +1,8 @@
 summary: Verify a newly detected disk which is not marked as removable is not automatically mounted
 
-restore:
+restore: |
     umount -f /dev/sdb || true
-    rmmod scsi_debug || true
-    rm /etc/udev/rules.d/90-test.rules || true
+    rmmod scsi_debug
 
 execute: |
     modprobe scsi_debug dev_size_mb=10
@@ -11,7 +10,7 @@ execute: |
         sleep 0.1
     done
     mkfs.vfat -I -F 32 /dev/sdb
-    udevadm settle ; udevadm trigger
+    udevadm settle ; udevadm trigger ; sleep 3
 
     # Now enable automount feature and restart ciborium to allow it reconsidering
     # already existing devices it ignored before when they appeared because
