@@ -16,6 +16,8 @@
 
 project: udisks2
 
+kill-timeout: 1.5h
+
 environment:
     PROJECT_PATH: /home/udisks2
     TESTSLIB: $PROJECT_PATH/tests/lib
