@@ -2,7 +2,7 @@
  * Copyright 2015 Canonical Ltd.
  *
  * Authors:
- * Manuel de la Pena : manuel.delapena@cannical.com
+ * Manuel de la Pena : manuel.delapena@canonical.com
  *
  * ciborium is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

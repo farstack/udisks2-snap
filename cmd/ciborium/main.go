@@ -2,7 +2,7 @@
  * Copyright 2014 Canonical Ltd.
  *
  * Authors:
- * Sergio Schvezov: sergio.schvezov@cannical.com
+ * Sergio Schvezov: sergio.schvezov@canonical.com
  *
  * ciborium is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

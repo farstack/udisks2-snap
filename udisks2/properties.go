@@ -2,7 +2,7 @@
  * Copyright 2015 Canonical Ltd.
  *
  * Authors:
- * Sergio Schvezov: sergio.schvezov@cannical.com
+ * Sergio Schvezov: sergio.schvezov@canonical.com
  * Manuel de la Pena: manuel.delapena@canonical.com
  *
  * ciborium is free software; you can redistribute it and/or modify
