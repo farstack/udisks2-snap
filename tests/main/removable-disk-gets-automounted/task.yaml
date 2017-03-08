@@ -14,7 +14,7 @@ execute: |
         sleep 0.1
     done
     mkfs.vfat -I -F 32 /dev/sdb
-    udevadm settle
+    udevadm settle ; udevadm trigger
 
     # Ensure that our udev rule was applied to the device
     udevadm info /dev/sdb | grep ID_DRIVE_FLASH_SD=1
