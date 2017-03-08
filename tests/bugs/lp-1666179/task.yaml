@@ -19,8 +19,9 @@ restore: |
     done
 
 execute: |
+    . $TESTSLIB/utilities.sh
+    wait_for_udisksd
     sudo systemctl stop snap.udisks2.ciborium
-    journalctl --flush -u snap.udisks2.ciborium
 
     # Create a huge number of mount entiries on the system before we start
     # ciborium again and it queries udisks2 for a list of those.
