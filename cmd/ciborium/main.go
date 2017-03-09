@@ -21,6 +21,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"launchpad.net/ciborium/udisks2"
 	dbus "launchpad.net/go-dbus/v1"
@@ -56,6 +57,10 @@ func main() {
 
 	// Wait until an owner for udisks2 appears and we can start talking to it
 	<-ownerAppeared
+
+	// This is nasty but currently needed to get us correctly talking with
+	// udisks2 as otherwise we fail to call certain methods for whatever reason.
+	time.Sleep(time.Second * 2)
 
 	udisks2 := udisks2.NewStorageWatcher(systemBus)
 

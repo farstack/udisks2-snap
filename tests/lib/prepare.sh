@@ -25,9 +25,6 @@ snap list | grep ^${kernel_name} | grep -E " [0-9]+\s+canonical"
 # Remove any existing state archive from other test suites
 rm -f /home/udisks2/snapd-state.tar.gz
 
-snap_install udisks2
-snap connect udisks2:client udisks2:service
-
 # Snapshot of the current snapd state for a later restore
 systemctl stop snapd.service snapd.socket
 tar czf $SPREAD_PATH/snapd-state.tar.gz /var/lib/snapd

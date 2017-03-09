@@ -5,6 +5,8 @@ environment:
     PART_TYPE_EFI: c12a7328-f81f-11d2-ba4b-00a0c93ec93b
 
 execute: |
+    . $TESTSLIB/utilities.sh
+
     bios_boot_disk=""
     efi_boot_disk=""
     for d in /dev/disk/by-path/*; do
@@ -39,12 +41,11 @@ execute: |
     # the chance to take decisions on available system devices again which it
     # wouldn't do otherwise if we keep it running (which we could as it
     # automatically detects if automount is enabled or not).
-    systemctl stop snap.udisks2.ciborium
     snap set udisks2 automount.enable=true
-    systemctl start snap.udisks2.ciborium
+    systemctl restart snap.udisks2.ciborium
 
-    # Give it a moment to settle (ciborium has a three second sleep on startup)
-    sleep 10
+    wait_for_systemd_service snap.udisks2.ciborium
+    sleep 2
 
     # If we have a BIOS boot disk ensure that it doesn't get mounted as it
     # hasn't a filesystem we can mount.

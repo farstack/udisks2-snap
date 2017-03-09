@@ -49,6 +49,8 @@ prepare-each: |
   journalctl --vacuum-time=1ms
   dmesg -c > /dev/null
 
+  . $TESTSLIB/prepare-each.sh
+
 restore-each: |
   . $TESTSLIB/restore-each.sh
 
