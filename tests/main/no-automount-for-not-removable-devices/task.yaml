@@ -1,0 +1,25 @@
+summary: Verify a newly detected disk which is not marked as removable is not automatically mounted
+
+restore: |
+    umount -f /dev/sdb || true
+    rmmod scsi_debug
+
+execute: |
+    modprobe scsi_debug dev_size_mb=10
+    while [ ! -e /dev/sdb ]; do
+        sleep 0.1
+    done
+    mkfs.vfat -I -F 32 /dev/sdb
+    udevadm settle ; udevadm trigger ; sleep 3
+
+    # Now enable automount feature and restart ciborium to allow it reconsidering
+    # already existing devices it ignored before when they appeared because
+    # automount was disabled.
+    snap set udisks2 automount.enable=true
+    systemctl restart snap.udisks2.ciborium
+
+    # Give things a few seconds to process things
+    sleep 10
+
+    # The disk should now be mounted within /media
+    ! mount | grep /media | grep -q /dev/sdb

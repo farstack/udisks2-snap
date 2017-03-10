@@ -12,7 +12,7 @@ confinement: strict
 
 apps:
     udisksctl:
-        command: bin/udisksctl
+        command: bin/udisksctl.sh
         plugs: [client]
         aliases: [udisksctl]
     udisksd:
@@ -24,7 +24,7 @@ apps:
             - mount-observe
     ciborium:
         daemon: simple
-        command: bin/ciborium.sh
+        command: bin/ciborium
         plugs:
             - client
             - network-bind
@@ -92,27 +92,18 @@ parts:
     ciborium:
         plugin: go
         go-importpath: launchpad.net/ciborium
-        source: https://git.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks2
-        source-type: git
-        source-branch: ciborium/0.2.12
+        source: .
         build-packages:
             - bzr
-            - libqt5opengl5-dev
-            - pkg-config
-            - qtbase5-private-dev
-            - qtdeclarative5-private-dev
-        filesets:
-            licenses:
-                - usr/share/doc/*/*copyright*
-            binaries:
-                - bin/ciborium
-        prime:
-            - $binaries
-            - $licenses
+        install: |
+            export GOPATH=$PWD/../go
+            for d in udisks2 cmd/ciborium ; do
+                cd $GOPATH/src/launchpad.net/ciborium/$d
+                go test -v
+            done
 
-    ciborium-launcher:
+    common:
         plugin: dump
-        source: bin
-        organize:
-            ciborium.sh: bin/ciborium.sh
-
+        source: .
+        prime:
+            - bin/udisksctl.sh

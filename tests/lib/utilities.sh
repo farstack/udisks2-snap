@@ -22,6 +22,10 @@ wait_for_systemd_service() {
 	sleep 1
 }
 
+wait_for_udisksd() {
+	wait_for_systemd_service snap.udisks2.udisksd
+}
+
 stop_after_first_reboot() {
 	if [ $SPREAD_REBOOT -eq 1 ] ; then
 		exit 0

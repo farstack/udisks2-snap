@@ -7,13 +7,21 @@
 for snap in /snap/*; do
 	snap="${snap:6}"
 	case "$snap" in
-		"bin" | "$gadget_name" | "$kernel_name" | "$core_name" | "$SNAP_NAME" )
+		"bin" | "$gadget_name" | "$kernel_name" | "$core_name" )
 			;;
 		*)
 			snap remove "$snap"
 			;;
 	esac
 done
+
+# Cleanup all configuration files from the snap so that we have
+# a fresh start for the next test
+rm -rf /var/snap/$SNAP_NAME/common/
+mkdir -p /var/snap/$SNAP_NAME/common/
+real_current=$(readlink -f /var/snap/$SNAP_NAME/current/)
+rm -rf $real_current
+mkdir -p $real_current
 
 # Ensure we have the same state for snapd as we had before
 systemctl stop snapd.service snapd.socket

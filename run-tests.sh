@@ -73,4 +73,4 @@ if [ -e ".tests_config" ]; then
 fi
 
 echo "INFO: Executing tests runner"
-cd $TESTS_EXTRAS_PATH && ./tests-runner.sh "$EXTRA_ARGS" "$@"
+cd $TESTS_EXTRAS_PATH && ./tests-runner.sh "$@" "$EXTRA_ARGS"

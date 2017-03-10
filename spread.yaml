@@ -39,7 +39,7 @@ exclude:
   - .git
 
 prepare: |
-  . $TESTSLIB/prepare-all.sh
+  . $TESTSLIB/prepare.sh
 
 prepare-each: |
   # Cleanup logs so we can just dump what has happened in the debug-each
@@ -49,24 +49,21 @@ prepare-each: |
   journalctl --vacuum-time=1ms
   dmesg -c > /dev/null
 
+  . $TESTSLIB/prepare-each.sh
+
+restore-each: |
+  . $TESTSLIB/restore-each.sh
+
 debug-each: |
   journalctl
   dmesg | grep DENIED || true
 
 suites:
     tests/bugs/:
-        summary: Tests for specific bugs found with the udisks2 snap
+        summary: Regressions tests for bugs found with the udisks2 snap
         systems:
             - ubuntu-core-16
-        prepare: |
-            . $TESTSLIB/prepare.sh
-        restore-each: |
-            . $TESTSLIB/restore-each.sh
     tests/main/:
         summary: Tests for udisks2
         systems:
             - ubuntu-core-16
-        prepare: |
-            . $TESTSLIB/prepare.sh
-        restore-each: |
-            . $TESTSLIB/restore-each.sh
