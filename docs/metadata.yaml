@@ -1,0 +1,29 @@
+site_title: udisks2 documentation
+site_logo_url: https://assets.ubuntu.com/v1/c5cb0f8e-picto-ubuntu.svg
+navigation:
+  - title: Introduction
+    children:
+      - title: About udisks2
+        location: index.md
+  - title: Install & Configure
+    children:
+      - title: Install udisks2
+        location: installation.md
+  - title: Reference
+    children:
+      - title: Snap Configuration
+        children:
+          - title: Automount Support
+            location: reference/snap-configuration/automount-support.md
+      - title: Available Commands
+        location: reference/available-commands.md
+      - title: DBUS API
+        location: reference/dbus-api.md
+  - title: Troubleshoot
+    children:
+      - title: FAQ
+        location: faq.md
+  - title: Release Notes
+    location: release-notes.md
+  - title: Report a Bug
+    location: report-bug.md

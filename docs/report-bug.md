@@ -1,0 +1,36 @@
+---
+title: "Report a Bug"
+table_of_contents: False
+---
+
+# Report a Bug
+
+Bugs can be reported [here](https://bugs.launchpad.net/snappy-hwe-snaps/+filebug).
+
+When submitting a bug report, please attach:
+
+ * */var/log/syslog*
+
+And the output of the following two commands:
+
+```
+$ sudo udisks2.udisksctl dump
+$ sudo udisks2.udisksctl status
+```
+
+If you have problems with a particular storage device please also attach the
+output of
+
+```
+$ sudo udevadm info /dev/<storage device><n>
+```
+
+For example if your storage device becomes available as */dev/sdb* and has two
+partitions */dev/sdb1* and */dev/sdb2* you need to add the output of the following
+two commands
+
+```
+$ sudo udevadm info /dev/sdb
+$ sudo udevadm info /dev/sdb1
+$ sudo udevadm info /dev/sdb2
+```
