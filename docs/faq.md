@@ -13,5 +13,5 @@ to provide solutions for them.
 ### Possible cause: Automount support is not enabled
 
 By default the udisks2 snap comes with automount support disabled. See
-*[Automount Support](reference/automount-support.md) for a description of how
+[Automount Support](reference/snap-configuration/automount.md) for a description of how
 you can enable automount support.

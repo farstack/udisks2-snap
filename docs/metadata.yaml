@@ -14,7 +14,9 @@ navigation:
       - title: Snap Configuration
         children:
           - title: Automount Support
-            location: reference/snap-configuration/automount-support.md
+            location: reference/snap-configuration/automount.md
+      - title: Supported Filesystems
+        location: reference/supported-filesystems.md
       - title: Available Commands
         location: reference/available-commands.md
       - title: DBUS API
