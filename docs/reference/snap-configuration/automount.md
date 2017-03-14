@@ -62,3 +62,18 @@ $ snap set udisks2 automount.enable=true
 ```
 $ snap set udisks2 automount.enable=false
 ```
+
+## Enable Automount By Default From a Gadget snap
+
+[Gadget snaps](https://docs.ubuntu.com/core/en/reference/gadget) can provide
+default configuration for snaps. This allows a device to ship with automount
+enabled by default. The necessary part which needs to be added to the
+*gadget.yaml* file for this is
+
+```
+defaults:
+  KTyDAsgNZg4u9UBJ63MHn6q12fmUjOfn:
+      automount.enable: true
+```
+
+The cryptic key in the part above is the alpha-numeric id of the udisks2 snap.
