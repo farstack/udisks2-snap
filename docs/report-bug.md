@@ -14,8 +14,8 @@ When submitting a bug report, please attach:
 And the output of the following two commands:
 
 ```
-$ sudo udisks2.udisksctl dump
-$ sudo udisks2.udisksctl status
+$ sudo udisksctl dump
+$ sudo udisksctl status
 ```
 
 If you have problems with a particular storage device please also attach the
@@ -25,7 +25,7 @@ output of
 $ sudo udevadm info /dev/<storage device><n>
 ```
 
-For example if your storage device becomes available as */dev/sdb* and has two
+For example, if your storage device becomes available as */dev/sdb* and has two
 partitions */dev/sdb1* and */dev/sdb2* you need to add the output of the following
 two commands
 

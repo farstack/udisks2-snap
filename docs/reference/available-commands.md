@@ -16,5 +16,5 @@ The udisksctl command offers a command-line based way to control and manage the
 udisks2 service. It allows the user to query for available storage devices, mount
 or unmount them.
 
-An explanatory description of the command and available options is available
+An explanation of the command and available options is available
 [here](https://udisks.freedesktop.org/docs/latest/udisksctl.1.html)

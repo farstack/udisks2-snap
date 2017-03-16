@@ -18,7 +18,7 @@ You can install the snap with the following command:
 
 Although the udisks2 snap is available from other channels (candidate, beta, edge),
 only the stable version should be used for production devices. Their meaning is internal
-to the development team of the network-manager snap.
+to the development team of the udisks2 snap.
 
 All necessary plugs and slots will be automatically connected within the
 installation process. You can verify this with:
@@ -36,8 +36,8 @@ udisks2:service  udisks2:client
 connected and will be either with a future version or dropped from the udisks2
 snap. Don't worry about it.
 
-Once the installation has successfully finished the udisks2 service is running
-in the background. You can check its current status with
+Once the installation has successfully finished the udisks2 service should be
+running in the background. You can check its current status with
 
 ```
  $ sudo systemctl status snap.udisks2.udisksd

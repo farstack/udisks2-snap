@@ -8,7 +8,7 @@ table_of_contents: True
 Automount is a feature which is useful when every removable storage device that
 is plugged into a device, on which the udisks2 snap is running, should be
 automatically mounted. This feature is known from traditional desktop operating
-systems where a USB storage device is pugged in and a file explorer directly
+systems where a USB storage device is plugged in and a file explorer directly
 opened to allow the user to explore the content of the device.
 
 On devices running Ubuntu Core the udisks2 snap offers such a feature named
@@ -26,14 +26,14 @@ a set of requirements. These are:
    into a CD drive.
  * **Storage device is not a system device.** If the system is running from a
    removable device all partitions on that device are ignored as they contain
-   sensitive data. If a snap would get access for example to the EFI boot
-   partition it could modify boot relevant things and hijack the whole system.
+   sensitive data. If a snap would get access, for example, to the EFI boot
+   partition, it could modify boot-relevant things and hijack the whole system.
  * **Storage device is not already mounted.** If the storage device is already
    mounted in */media* it will not be mounted again.
 
-If all requirements are fulfilled by a storage device partitions of the device
-are mounted in */media* in a directory specific for the *root* user. The path
-follows generally this schema: */media/<user>/<storage device id/name>*
+If all requirements are fulfilled by a storage device or some of its partitions,
+they are mounted in */media* in a directory specific for the *root* user. The path
+generally follows this schema: */media/<user>/<storage device id/name>*
 
 ## Enable Automount
 
@@ -76,4 +76,6 @@ defaults:
       automount.enable: true
 ```
 
-The cryptic key in the part above is the alpha-numeric id of the udisks2 snap.
+The cryptic key in the part above is the alpha-numeric id of the udisks2 snap
+which is assigned from the Ubuntu Store. You can copy the full snippet into
+your *gadget.yaml* as is.
