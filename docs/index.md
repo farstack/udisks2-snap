@@ -16,7 +16,7 @@ udisks2 offers a range of different features which are:
  * Detection of storage devices
  * Listing of various useful information about available storage devices
  * Mount/unmount of storage devices
- * Advanced operations on storage devices like partiioning, formatting, ...
+ * Advanced operations on storage devices like partitioning, formatting, ...
 
 ## Upstream documentation
 
