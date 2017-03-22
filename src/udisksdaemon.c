@@ -264,6 +264,8 @@ udisks_daemon_constructed (GObject *object)
         }
     }
 
+  /* If we're running in a snap environment just keep the state in $SNAP_DATA.
+   * otherwise we need to create a traditional state dir */
   if (g_getenv ("SNAP_DATA") == NULL)
     {
       if (!g_file_test (PACKAGE_LOCALSTATE_DIR "/lib/udisks2", G_FILE_TEST_IS_DIR))
