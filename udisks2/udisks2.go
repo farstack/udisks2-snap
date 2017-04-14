@@ -51,6 +51,7 @@ const (
 	dbusPropertiesInterface     = "org.freedesktop.DBus.Properties"
 	dbusAddedSignal             = "InterfacesAdded"
 	dbusRemovedSignal           = "InterfacesRemoved"
+	defaultMaximumWaitTime      = 64
 )
 
 type MountEvent struct {
@@ -208,77 +209,78 @@ func (u *UDisks2) mountpointsForPath(p dbus.ObjectPath) []string {
 
 func (u *UDisks2) Init() (err error) {
 	d, err := newDispatcher(u.conn)
-	if err == nil {
-		u.dispatcher = d
-		u.jobs = newJobManager(d)
-		go func() {
-			for {
-				select {
-				case e := <-u.dispatcher.Additions:
-					if err := u.processAddEvent(&e); err != nil {
-						log.Print("Issues while processing ", e.Path, ": ", err)
+	if err != nil {
+		return err
+	}
+
+	u.dispatcher = d
+	u.jobs = newJobManager(d)
+	go func() {
+		for {
+			select {
+			case e := <-u.dispatcher.Additions:
+				if err := u.processAddEvent(&e); err != nil {
+					log.Print("Issues while processing ", e.Path, ": ", err)
+				}
+			case e := <-u.dispatcher.Removals:
+				if err := u.processRemoveEvent(e.Path, e.Interfaces); err != nil {
+					log.Println("Issues while processing remove event:", err)
+				}
+			case j := <-u.jobs.UnmountJobs:
+				if j.WasCompleted {
+					log.Println("Unmount job was finished for", j.Event.Path, "for paths", j.Paths)
+					for _, path := range j.Paths {
+						u.umountCompleted <- path
+						log.Println("Removing", path, "from", u.mountpoints)
+						delete(u.mountpoints, dbus.ObjectPath(path))
 					}
-				case e := <-u.dispatcher.Removals:
-					if err := u.processRemoveEvent(e.Path, e.Interfaces); err != nil {
-						log.Println("Issues while processing remove event:", err)
-					}
-				case j := <-u.jobs.UnmountJobs:
-					if j.WasCompleted {
-						log.Println("Unmount job was finished for", j.Event.Path, "for paths", j.Paths)
-						for _, path := range j.Paths {
-							u.umountCompleted <- path
-							log.Println("Removing", path, "from", u.mountpoints)
-							delete(u.mountpoints, dbus.ObjectPath(path))
-						}
-					} else {
-						log.Print("Unmount job started.")
-					}
-				case j := <-u.jobs.MountJobs:
-					if j.WasCompleted {
-						log.Println("Mount job was finished for", j.Event.Path, "for paths", j.Paths)
-						for _, path := range j.Paths {
-							// grab the mointpoints from the variant
-							mountpoints := u.mountpointsForPath(dbus.ObjectPath(path))
-							log.Println("Mount points are", mountpoints)
-							if len(mountpoints) > 0 {
-								p := dbus.ObjectPath(path)
-								mp := string(mountpoints[0])
-								u.mountpoints[p] = string(mp)
-								// update the drives
-								for _, d := range u.drives {
-									changed := d.SetMounted(p)
-									if changed {
-										e := MountEvent{d.Path, mp}
-										log.Println("New mount event", e)
-										go func() {
-											for _, t := range [...]int{1, 2, 3, 4, 5, 10} {
-												_, err := os.Stat(mp)
-												if err != nil {
-													log.Println("Mountpoint", mp, "not yet present. Wating", t, "seconds due to", err)
-													time.Sleep(time.Duration(t) * time.Second)
-												} else {
-													break
-												}
+				} else {
+					log.Print("Unmount job started.")
+				}
+			case j := <-u.jobs.MountJobs:
+				if j.WasCompleted {
+					log.Println("Mount job was finished for", j.Event.Path, "for paths", j.Paths)
+					for _, path := range j.Paths {
+						// grab the mointpoints from the variant
+						mountpoints := u.mountpointsForPath(dbus.ObjectPath(path))
+						log.Println("Mount points are", mountpoints)
+						if len(mountpoints) > 0 {
+							p := dbus.ObjectPath(path)
+							mp := string(mountpoints[0])
+							u.mountpoints[p] = string(mp)
+							// update the drives
+							for _, d := range u.drives {
+								changed := d.SetMounted(p)
+								if changed {
+									e := MountEvent{d.Path, mp}
+									log.Println("New mount event", e)
+									go func() {
+										for _, t := range [...]int{1, 2, 3, 4, 5, 10} {
+											_, err := os.Stat(mp)
+											if err != nil {
+												log.Println("Mountpoint", mp, "not yet present. Wating", t, "seconds due to", err)
+												time.Sleep(time.Duration(t) * time.Second)
+											} else {
+												break
 											}
-											log.Println("Sending new event to channel.")
-											u.mountCompleted <- e
-										}()
-									}
+										}
+										log.Println("Sending new event to channel.")
+										u.mountCompleted <- e
+									}()
 								}
 							}
-
 						}
-					} else {
-						log.Print("Mount job started.")
+
 					}
+				} else {
+					log.Print("Mount job started.")
 				}
 			}
-		}()
-		d.Init()
-		u.emitExistingDevices()
-		return nil
-	}
-	return err
+		}
+	}()
+	d.Init()
+	u.emitExistingDevices()
+	return nil
 }
 
 func (u *UDisks2) connectToSignal(path dbus.ObjectPath, inter, member string) (*dbus.SignalWatch, error) {
@@ -304,10 +306,26 @@ func (u *UDisks2) emitExistingDevices() {
 	u.startLock.Lock()
 	defer u.startLock.Unlock()
 	obj := u.conn.Object(dbusName, dbusObject)
-	reply, err := obj.Call(dbusObjectManagerInterface, "GetManagedObjects")
-	if err != nil {
-		log.Println("Cannot get initial state for devices:", err)
-		return
+
+	// At certain systems it has been observed that although the
+	// org.freedesktop.UDisks2 name is registered the ObjectManager
+	// interface is not immediately ready. As a result the
+	// "GetManagedObjects" call fails and the cold-plugged usb devices
+	// are not reported. The code below calls GetManagedObjects several
+	// times waiting for it to return successfully. It is assumed that
+	// once the org.freedesktop.UDisks2 name is acquired the interface
+	// will show up.
+	var reply *dbus.Message
+	f := fibonacci()
+	for i := f(); i < defaultMaximumWaitTime; i = f() {
+		var err error
+		reply, err = obj.Call(dbusObjectManagerInterface, "GetManagedObjects")
+		if err != nil {
+			log.Println("Cannot get initial state for devices:", err)
+			time.Sleep(time.Duration(i) * time.Second)
+		} else {
+			break
+		}
 	}
 
 	allDevices := make(map[dbus.ObjectPath]InterfacesAndProperties)
