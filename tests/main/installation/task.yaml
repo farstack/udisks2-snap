@@ -13,6 +13,6 @@ execute: |
     /snap/bin/udisks2.udisksctl status
 
     # Ensure all necessary plugs/slots are connected
-    snap interfaces | grep -Pzq ":mount-observe +udisks2"
+    snap interfaces | grep -Pzq ":mount-observe +[a-z,-]*udisks2"
     snap interfaces | grep -Pzq "udisks2:service +udisks2:client"
-    snap interfaces | grep -Pzq ":network-bind +udisks2"
+    snap interfaces | grep -Pzq ":network-bind +[a-z,-]*udisks2"

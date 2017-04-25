@@ -35,6 +35,9 @@ If all requirements are fulfilled by a storage device or some of its partitions,
 they are mounted in */media* in a directory specific for the *root* user. The path
 generally follows this schema: */media/<user>/<storage device id/name>*
 
+When enabled this feature will also mount any device plugged in before the boot that
+fulfill the above rules.
+
 ## Enable Automount
 
 The udisks2 snap provides a single configuration option which can be used to turn
