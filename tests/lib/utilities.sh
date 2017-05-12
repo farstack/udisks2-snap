@@ -12,6 +12,14 @@ snap_install() {
 		# snap.
 		snap install $name
 		snap install --dangerous $PROJECT_PATH/$name*_amd64.snap
+
+		# Setup all necessary aliases
+		snapd_version=$(snap version | awk '/^snapd / {print $2; exit}')
+		target=$SNAP_NAME.udisksctl
+		if dpkg --compare-versions $snapd_version lt 2.25 ; then
+			target=$SNAP_NAME
+		fi
+		snap alias $target udisksctl
 	fi
 }
 
