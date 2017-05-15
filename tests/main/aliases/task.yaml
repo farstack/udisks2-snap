@@ -1,13 +1,4 @@
-summary: Verify aliases provided by the snap are correctly enabled
+summary: Verify aliases are set up
 
 execute: |
-    # FIXME: Aliases should be not in place automatically unless we
-    # have them approved from the store in our snap-declaration assertion.
-    test ! -e /snap/bin/udisksctl
-
-    snap alias udisks2 udisksctl
-
-    test -e /snap/bin/udisksctl
-
-    # Verify the alias works without any problems
-    /snap/bin/udisksctl status
+    test -x /snap/bin/udisksctl
