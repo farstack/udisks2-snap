@@ -23,6 +23,7 @@ package udisks2
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -52,7 +53,18 @@ const (
 	dbusAddedSignal             = "InterfacesAdded"
 	dbusRemovedSignal           = "InterfacesRemoved"
 	defaultMaximumWaitTime      = 64
+	debugEnabledFlagFile        = ".debug_enabled"
 )
+
+func init() {
+	snapCommon := os.Getenv("SNAP_COMMON")
+	path := filepath.Join(snapCommon, debugEnabledFlagFile)
+
+	// File does not exists which means debug is not enabled
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		log.SetOutput(ioutil.Discard)
+	}
+}
 
 type MountEvent struct {
 	Path       dbus.ObjectPath
