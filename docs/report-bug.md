@@ -7,7 +7,15 @@ table_of_contents: False
 
 Bugs can be reported [here](https://bugs.launchpad.net/snappy-hwe-snaps/+filebug).
 
-When submitting a bug report, please attach:
+When submitting a bug report, please first enable logging by setting the 
+**debug.enabled** snao option to **true** and restarting the ciborium service.
+
+```
+$ sudo snap set udisks2 debug.enable=true
+$ sudo systemctl restart snap.udisks2.ciborium.service
+```
+
+Now repeat the steps that lead to the failure and, please attach:
 
  * */var/log/syslog*
 
