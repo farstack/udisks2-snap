@@ -1,0 +1,24 @@
+summary: Test udisks2 snap debug configuration
+
+execute: |
+    . $TESTSLIB/utilities.sh
+
+    # Service should be up and running
+    wait_for_systemd_service snap.udisks2.udisksd
+
+    # .. so should ciborium
+    wait_for_systemd_service snap.udisks2.ciborium
+
+    # Check that automount is disabled by default
+    test "$(snap get udisks2 debug.enable)" = false
+    test ! -e /var/snap/udisks2/common/.debug_enabled
+
+    # Check that enabling debug DTRT
+    snap set udisks2 debug.enable=true
+    test "$(snap get udisks2 debug.enable)" = true
+    test -e /var/snap/udisks2/common/.debug_enabled
+
+    # And for disabling
+    snap set udisks2 debug.enable=false
+    test "$(snap get udisks2 debug.enable)" = false
+    test ! -e /var/snap/udisks2/common/.debug_enabled
