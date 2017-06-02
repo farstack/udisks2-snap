@@ -2,6 +2,7 @@ summary: Test udisks2 snap debug configuration
 
 execute: |
     . $TESTSLIB/utilities.sh
+    DATE=`date +"%F %T"`
 
     # Service should be up and running
     wait_for_systemd_service snap.udisks2.udisksd
@@ -12,11 +13,16 @@ execute: |
     # Check that automount is disabled by default
     test "$(snap get udisks2 debug.enable)" = false
     test ! -e /var/snap/udisks2/common/.debug_enabled
+    journalctl --no-pager -u snap.udisks2.ciborium.service -b -S "$DATE" | grep -vPzq ".go"
 
     # Check that enabling debug DTRT
     snap set udisks2 debug.enable=true
     test "$(snap get udisks2 debug.enable)" = true
+    DATE=`date +"%F %T"`
+    sudo systemctl restart snap.udisks2.ciborium.service
+    wait_for_systemd_service snap.udisks2.ciborium
     test -e /var/snap/udisks2/common/.debug_enabled
+    journalctl --no-pager -u snap.udisks2.ciborium.service -b -S "$DATE" | grep -Pzq ".go"
 
     # And for disabling
     snap set udisks2 debug.enable=false
