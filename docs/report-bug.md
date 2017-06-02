@@ -17,7 +17,7 @@ $ sudo systemctl restart snap.udisks2.ciborium.service
 
 Now repeat the steps that lead to the failure and, please attach:
 
- * $ journalctl --no-pager &> system-log
+ * $ journalctl --no-pager > system-log
 
 And the output of the following two commands:
 

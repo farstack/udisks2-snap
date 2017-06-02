@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Automount
+# Option automount
 FLAG_FILE="$SNAP_COMMON/.automount_enabled"
 
 value=$(snapctl get automount.enable)
@@ -16,7 +16,7 @@ elif [ "$value" = "false" ]; then
     rm -f "$FLAG_FILE"
 fi
 
-# Debug
+# Option debug
 FLAG_FILE="$SNAP_COMMON/.debug_enabled"
 
 value=$(snapctl get debug.enable)
