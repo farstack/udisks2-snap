@@ -40,3 +40,11 @@ $ snap set udisks2 debug.enable=true
 $ snap set udisks2 debug.enable=false
 ```
 
+## Viewing logs
+
+The debug information, when enabled, will be available in the journal and can
+be viewed with:
+
+```
+$ journalctl --no-pager -u snap.udisks2.ciborium
+```
