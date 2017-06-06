@@ -1,6 +1,7 @@
 #!/bin/sh
 
-FLAG_FILE="$SNAP_COMMON/.automount_enabled"
+# Option automount
+AUTOMOUNT_FILE="$SNAP_COMMON/.automount_enabled"
 
 value=$(snapctl get automount.enable)
 if [ -z "$value" ]; then
@@ -10,10 +11,30 @@ if [ -z "$value" ]; then
 fi
 
 if [ "$value" = "true" ]; then
-    touch "$FLAG_FILE"
+	if [ ! -f "$AUTOMOUNT_FILE" ]; then
+		touch "$AUTOMOUNT_FILE"
+	fi
 elif [ "$value" = "false" ]; then
-    rm -f "$FLAG_FILE"
+	if [ -f "$AUTOMOUNT_FILE" ]; then
+		rm -f "$AUTOMOUNT_FILE"
+	fi
 fi
 
+# Option debug
+DEBUG_FILE="$SNAP_COMMON/.debug_enabled"
 
+value=$(snapctl get debug.enable)
+if [ -z "$value" ]; then
+	snapctl set debug.enable="false"
+	"$value"="false"
+fi
 
+if [ "$value" = "true" ]; then
+	if [ ! -f "$DEBUG_FILE" ]; then
+		touch "$DEBUG_FILE"
+	fi
+elif [ "$value" = "false" ]; then
+	if [ -f "$DEBUG_FILE" ]; then
+		rm -f "$DEBUG_FILE"
+	fi
+fi

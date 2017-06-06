@@ -54,3 +54,4 @@ Now you have udisks2 successfully installed.
 ## Next Steps
 
  * [Enable Automount Support](reference/snap-configuration/automount.md)
+ * [Enable Debug Support](reference/snap-configuration/debug.md)
