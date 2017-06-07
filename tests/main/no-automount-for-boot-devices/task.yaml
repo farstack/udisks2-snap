@@ -42,6 +42,7 @@ execute: |
     # wouldn't do otherwise if we keep it running (which we could as it
     # automatically detects if automount is enabled or not).
     snap set udisks2 automount.enable=true
+    snap set udisks2 debug.enable=true
     systemctl restart snap.udisks2.ciborium
 
     wait_for_systemd_service snap.udisks2.ciborium

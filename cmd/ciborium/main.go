@@ -67,6 +67,7 @@ func main() {
 	blockAdded, blockError := udisks2.SubscribeAddEvents()
 	mountRemoved := udisks2.SubscribeRemoveEvents()
 	mountCompleted, mountErrors := udisks2.SubscribeMountEvents()
+	unmountCompleted, unmountErrors := udisks2.SubscribeUnmountEvents()
 
 	// create a routine per couple of channels, the select algorithm will make use
 	// ignore some events if more than one channels is being written to the algorithm
@@ -87,6 +88,10 @@ func main() {
 				log.Println("Failed to mount device:", e)
 			case path := <-mountCompleted:
 				log.Println("Successfully mount device:", path)
+			case e := <-unmountErrors:
+				log.Println("Failed to unmount device:", e)
+			case path := <-unmountCompleted:
+				log.Println("Successfully unmount device:", path)
 			case m := <-mountRemoved:
 				log.Println("Path removed", m)
 			}
