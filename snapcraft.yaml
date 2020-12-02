@@ -9,6 +9,7 @@ description: |
     https://code.launchpad.net/~snappy-hwe-team/snappy-hwe-snaps/+git/udisks
 grade: stable
 confinement: strict
+base: core
 
 apps:
     udisksctl:
@@ -87,7 +88,7 @@ parts:
             - libexec
             - sbin
             - usr/lib/*/*.so*
-        install: |
+        override-build: |
           # Run all tests shipped by default
           make check
 
@@ -97,7 +98,7 @@ parts:
         source: .
         build-packages:
             - bzr
-        install: |
+        override-build: |
             export GOPATH=$PWD/../go
             for d in udisks2 cmd/ciborium ; do
                 cd $GOPATH/src/launchpad.net/ciborium/$d
