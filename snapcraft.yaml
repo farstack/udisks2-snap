@@ -88,9 +88,6 @@ parts:
             - libexec
             - sbin
             - usr/lib/*/*.so*
-        override-build: |
-          # Run all tests shipped by default
-          make check
 
     ciborium:
         plugin: go
@@ -104,6 +101,7 @@ parts:
                 cd $GOPATH/src/launchpad.net/ciborium/$d
                 go test -v
             done
+            snapcraftctl build
 
     common:
         plugin: dump
